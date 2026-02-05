@@ -14,6 +14,23 @@ const Button = (props) => {
   )
 }
 
+const Display = (props) => {
+  return (
+    <h1>{props.text}</h1>
+  )
+}
+
+  const votesArray = {
+    0: 0,
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+    6: 0,
+    7: 0,
+  }
+
 
 const App = () => {
   const anecdotes = [
@@ -27,16 +44,21 @@ const App = () => {
     'The only way to go fast, is to go well.'
   ]
 
+
   
   const [selected, setSelected] = useState(0)
   const [votes, setVotes] = useState(0)
-  const [anecdoteVotes, saveVotes] = useState(Array(anecdotes.length).fill(0))
-
+  const [anecdoteVotes, saveVotes] = useState(votesArray)
+  
   const getRandInt = () => {
     return(
     (Math.floor(Math.random() * (anecdotes.length)))
     )
   }
+
+  let max = Math.max(...Object.values(anecdoteVotes))
+
+  let key = Object.keys(anecdoteVotes).find(key => anecdoteVotes[key] === max)
 
   const handleNextClick = () => {
     let rand_Num = getRandInt()
@@ -49,15 +71,23 @@ const App = () => {
   const handleVoteClick = () => {
     setVotes(anecdoteVotes[selected])
     setVotes(votes + 1)
-    saveVotes[]
-    
+    saveVotes(prev => ({
+      ...prev,
+      [selected]: (anecdoteVotes[selected] + 1),
+    }));
   }
+
+  
 
   return (
     <>
+      <Display text="Anecdote of the day"/>
       <Anecdotes anecdotes={anecdotes[selected]}/>
-      <Button text="vote"/>
+      <p>has {anecdoteVotes[selected]} votes</p>
+      <Button func={handleVoteClick} text="vote"/>
       <Button func={handleNextClick} text="next quote"/>
+      <Display text="Anecdote with most votes"/>
+      <p>{anecdotes[key]}</p>
     </>
   )
 }
