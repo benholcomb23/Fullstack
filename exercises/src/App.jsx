@@ -4,10 +4,13 @@ import noteService from './services/notes'
 
 
 const App = () => {
+
+  // Sets state with UseState React Hook, defines state functions and state variables
   const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('type a new note')
   const [showAll, setShowAll] = useState(true)
 
+  // "useEffect" is also setting a stateful connection to the json server (using our pre-defined noteService module)
   useEffect(() => {
     noteService
     .getAll()
@@ -16,6 +19,8 @@ const App = () => {
     })
   }, [])
 
+  // Event Handlers
+  // Creates a new note via the newNote current state defined by handleNoteChange(), then concats it to notes list state, updates json
   const addNote = event => {
     event.preventDefault()
     const noteObject = {
@@ -31,11 +36,12 @@ const App = () => {
     })
   }
 
+  // Sets a temp new note based on the current state of the input box. Does not update "notes"
   const handleNoteChange = (event) => {
-    console.log(event.target.value)
     setNewNote(event.target.value)
   }
 
+  // Searches for a note based on an id, then sets a temp variable "changedNote" that copies all variables (...note) and then sets important to it's opposite. Updates json
   const toggleImportanceOf = (id) => {
     const note = notes.find(n => n.id === id)
     const changedNote = {...note, important: !note.important}
@@ -45,9 +51,17 @@ const App = () => {
       .then(returnedNote => {
         setNotes(notes.map(note => note.id === id ? returnedNote : note))
       })
+      .catch(error => {
+        alert(
+          `the note ${note.content} was already deleted from the server`
+        )
+        setNotes(notes.filter(n => n.id !== id))
+      })
   }
 
-  const notesToShow = showAll
+  // Uses ? : to definte a variable. If "showAll" True, then all notes are shown, otherwise notes are shown if important
+  const notesToShow = 
+    showAll
     ? notes
     : notes.filter(note => note.important)
 
