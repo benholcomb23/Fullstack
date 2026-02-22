@@ -1,10 +1,10 @@
-import axios from 'axios'
 import { useEffect, useState } from 'react'
+import personService from './services/services'
 
 const People = (props) => {
   return (
     <>
-    {props.name} {props.number}
+    {props.name} {props.number} <button onClick={props.function}>delete person</button>
     </>
   )
 }
@@ -15,10 +15,10 @@ const Numbers = (props) => {
       <h2>Numbers</h2>
       <ul>
         {props.filtered ? props.filteredPersons.map((people) => (
-          <li key={people.id}><People name={people.name} number={people.phone_number}/></li>
+          <li key={people.id}><People name={people.name} number={people.phone_number} function={() => props.handleUser(people.id)}/></li>
         )) 
         : props.persons.map((people) => (
-          <li key={people.id}><People name={people.name} number={people.phone_number}/></li>
+          <li key={people.id}><People name={people.name} number={people.phone_number} function={() => props.handleUser(people.id)}/></li>
         )) 
         }
       </ul>
@@ -78,11 +78,13 @@ const App = () => {
   const [isFiltered, setIsFiltered] = useState(false)
   
   useEffect(() => {
-    axios
-    .get("http://localhost:3001/persons")
-    .then(response => {
-      const persons = response.data
-      setPersons(persons)
+    personService
+    .getAll()
+    .then(initialPersons => {
+      setPersons(initialPersons)
+    })
+    .catch(error => {
+      alert('Error found getting initial list')
     })
   }, [])
 
@@ -103,7 +105,12 @@ const App = () => {
       alert('hey you gotta put something here')
     }
     else {
-    setPersons(persons.concat(person))
+      personService
+        .create(person)
+        .then(returnedPerson =>
+          setPersons(persons.concat(returnedPerson))
+        )
+    
         
     setNewName('')
     }
@@ -128,12 +135,29 @@ const App = () => {
     setFilterText(event.target.value)
   }
 
+  const handleRemovePerson = (id) => {
+    confirm('Are you sure you want to delete?')
+    ?
+    personService
+      .remove(id)
+      .then(
+        setPersons(
+          persons.filter(person => person.id !== id)
+        )
+      )
+      .catch(error => {
+        alert('delete failed')
+      })
+      :
+      console.log(` the id deleted was ${id}`)
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
       <Filter filterText={filterText} handleFilterText={handleFilterText} setFilter={setFilter}/>
       <NewPersonForm newName={newName} handleAddPerson={handleAddPerson} newPhoneNumber={newPhoneNumber} handleNewPhone={handleNewPhone} addPerson={addPerson}/>
-      <Numbers filtered={isFiltered} filteredPersons={filteredPersons} persons={persons}/>
+      <Numbers filtered={isFiltered} filteredPersons={filteredPersons} persons={persons} handleUser={handleRemovePerson}/>
     </div>
   )
 }
