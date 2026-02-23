@@ -89,17 +89,34 @@ const App = () => {
   }, [])
 
   const addPerson = (event) => {
-    const existingPerson = persons.find(person => person.name === newName)
+    
     event.preventDefault()
     const person = {
         name: newName,
         phone_number: newPhoneNumber,
         id: String(persons.length + 1)
       }
+    
+    const existingPerson = persons.find(person => person.name === newName)
     if (existingPerson) {
-      console.log('err')
-      alert('hey this thing exists')
+      console.log(existingPerson)
+      const oldUser = {
+        name: newName,
+        phone_number: newPhoneNumber,
+        id: existingPerson.id
+      }
+      alert(`${person.name}'s number will be updated to ${person.phone_number}`)
+      console.log(`old user is ${oldUser}`)
+      personService
+        .update(oldUser.id, oldUser)
+        .then(returnedPerson =>
+          setPersons(persons.map(person => returnedPerson.id !== person.id  ? person : returnedPerson))
+        )
+        .catch(error => {
+          alert(`Error: Cannot add new number for ${oldUser.name}`)
+        })
     }
+
     else if (newName === '') {
       console.log('err')
       alert('hey you gotta put something here')
@@ -110,8 +127,9 @@ const App = () => {
         .then(returnedPerson =>
           setPersons(persons.concat(returnedPerson))
         )
-    
-        
+        .catch(error => {
+          alert('Error: Person not created')
+        })  
     setNewName('')
     }
   }
