@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import personService from './services/services'
+import SuccessMessage from './components/SuccessMessage'
 
 const People = (props) => {
   return (
@@ -76,6 +77,7 @@ const App = () => {
   const [filterText, setFilterText] = useState('')
   const [filteredPersons, setfilteredPersons] = useState(persons)
   const [isFiltered, setIsFiltered] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
   
   useEffect(() => {
     personService
@@ -105,16 +107,18 @@ const App = () => {
         phone_number: newPhoneNumber,
         id: existingPerson.id
       }
-      alert(`${person.name}'s number will be updated to ${person.phone_number}`)
       console.log(`old user is ${oldUser}`)
       personService
         .update(oldUser.id, oldUser)
         .then(returnedPerson =>
-          setPersons(persons.map(person => returnedPerson.id !== person.id  ? person : returnedPerson))
+          setPersons(persons.map(person => returnedPerson.id !== person.id  ? person : returnedPerson)),
+          handleSuccessMessage(`${oldUser.name}'s number changed to ${oldUser.phone_number}`)
         )
         .catch(error => {
-          alert(`Error: Cannot add new number for ${oldUser.name}`)
+          handleSuccessMessage(`${oldUser.name} has already been deleted from the server`)
         })
+    setNewName('')
+    setNewPhoneNumber('')
     }
 
     else if (newName === '') {
@@ -125,13 +129,21 @@ const App = () => {
       personService
         .create(person)
         .then(returnedPerson =>
-          setPersons(persons.concat(returnedPerson))
+          setPersons(persons.concat(returnedPerson)),
+          handleSuccessMessage(`Added ${person.name}`) 
         )
         .catch(error => {
           alert('Error: Person not created')
         })  
     setNewName('')
+    setNewPhoneNumber('')
     }
+  }
+
+  const handleSuccessMessage = (message) => {
+    setSuccessMessage(message)
+    setTimeout(() => {
+      setSuccessMessage('')}, 5000)
   }
 
   const setFilter = (event) => {
@@ -175,6 +187,9 @@ const App = () => {
       <h2>Phonebook</h2>
       <Filter filterText={filterText} handleFilterText={handleFilterText} setFilter={setFilter}/>
       <NewPersonForm newName={newName} handleAddPerson={handleAddPerson} newPhoneNumber={newPhoneNumber} handleNewPhone={handleNewPhone} addPerson={addPerson}/>
+      {(successMessage === '')
+      ? null
+      : <SuccessMessage message={successMessage}/>}
       <Numbers filtered={isFiltered} filteredPersons={filteredPersons} persons={persons} handleUser={handleRemovePerson}/>
     </div>
   )
